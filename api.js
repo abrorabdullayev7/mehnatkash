@@ -1,6 +1,8 @@
 // API Service - Frontend API calls
 class UzumAPI {
-  constructor(baseURL = 'http://localhost:5000/api') {
+  constructor(baseURL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:5000/api'
+    : 'https://banana-market.onrender.com/api') {
     this.baseURL = baseURL;
     this.token = this.getToken();
   }
