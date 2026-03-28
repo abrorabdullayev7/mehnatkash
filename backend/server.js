@@ -1,12 +1,15 @@
-// Main Server File
+﻿// Main Server File
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const User = require('./models/User');
 
 dotenv.config();
 
 const app = express();
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'abrorabdullayev862@gmail.com').trim().toLowerCase();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 // Middleware
 app.use(cors());
@@ -18,8 +21,38 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/uzum', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('✅ MongoDB connected'))
-.catch((err) => console.log('❌ MongoDB connection error:', err));
+.then(async () => {
+  console.log('вњ… MongoDB connected');
+  await ensureAdminAccount();
+})
+.catch((err) => console.log('вќЊ MongoDB connection error:', err));
+
+async function ensureAdminAccount() {
+  try {
+    await User.updateMany(
+      { role: 'admin', email: { $ne: ADMIN_EMAIL } },
+      { $set: { role: 'user' } }
+    );
+
+    let admin = await User.findOne({ email: ADMIN_EMAIL });
+    if (!admin) {
+      admin = new User({
+        name: 'Admin',
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+        role: 'admin'
+      });
+      await admin.save();
+      console.log(`вњ… Admin user created (${ADMIN_EMAIL})`);
+    } else if (admin.role !== 'admin') {
+      admin.role = 'admin';
+      await admin.save();
+      console.log(`вњ… Admin role restored (${ADMIN_EMAIL})`);
+    }
+  } catch (error) {
+    console.log('вќЊ Admin ensure error:', error.message || error);
+  }
+}
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -56,3 +89,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+

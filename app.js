@@ -8,18 +8,6 @@ const defaultProducts = [
   { id: 6, name: 'Samsung Galaxy S24 Ultra', price: 15500000, oldPrice: 17500000, image: 'https://avatars.mds.yandex.net/i?id=7c5b6e4c51ed40bbcd397680e8fec54b40d640e3-3006166-images-thumbs&n=13', category: 'telefon', rating: 4.3 },
   { id: 7, name: '4k Monitor', price: 4200000, oldPrice: 4800000, image: 'https://avatars.mds.yandex.net/i?id=afde8cb522521ecb05d31acccc462c5d3a68efce-13088547-images-thumbs&n=13', category: 'elektronika', rating: 4.4 },
   { id: 8, name: 'Nike krosovka', price: 920000, oldPrice: 1100000, image: 'https://picsum.photos/seed/product8/400/300', category: 'kiyim', rating: 3.9 },
-  { id: 9, name: 'BrandD Plus Model 9', price: 60000, oldPrice: 72000, image: 'https://picsum.photos/seed/product9/400/300', category: 'oziq', rating: 4.6 },
-  { id: 10, name: 'BrandE Lite Model 10', price: 130000, oldPrice: 150000, image: 'https://picsum.photos/seed/product10/400/300', category: 'kitoblar', rating: 4.2 },
-  { id: 11, name: 'BrandA Pro Model 11', price: 16000000, oldPrice: 18000000, image: 'https://picsum.photos/seed/product11/400/300', category: 'telefon', rating: 4.8 },
-  { id: 12, name: 'BrandB Max Model 12', price: 3900000, oldPrice: 4400000, image: 'https://picsum.photos/seed/product12/400/300', category: 'elektronika', rating: 4.0 },
-  { id: 13, name: 'BrandC Ultra Model 13', price: 850000, oldPrice: 980000, image: 'https://picsum.photos/seed/product13/400/300', category: 'kiyim', rating: 3.8 },
-  { id: 14, name: 'BrandD Plus Model 14', price: 70000, oldPrice: 85000, image: 'https://picsum.photos/seed/product14/400/300', category: 'oziq', rating: 4.5 },
-  { id: 15, name: 'BrandE Lite Model 15', price: 125000, oldPrice: 145000, image: 'https://picsum.photos/seed/product15/400/300', category: 'kitoblar', rating: 4.3 },
-  { id: 16, name: 'BrandA Pro Model 16', price: 14800000, oldPrice: 16500000, image: 'https://picsum.photos/seed/product16/400/300', category: 'telefon', rating: 4.1 },
-  { id: 17, name: 'BrandB Max Model 17', price: 4100000, oldPrice: 4700000, image: 'https://picsum.photos/seed/product17/400/300', category: 'elektronika', rating: 4.4 },
-  { id: 18, name: 'BrandC Ultra Model 18', price: 780000, oldPrice: 920000, image: 'https://picsum.photos/seed/product18/400/300', category: 'kiyim', rating: 3.7 },
-  { id: 19, name: 'BrandD Plus Model 19', price: 55000, oldPrice: 66000, image: 'https://picsum.photos/seed/product19/400/300', category: 'oziq', rating: 4.6 },
-  { id: 20, name: 'BrandE Lite Model 20', price: 135000, oldPrice: 155000, image: 'https://picsum.photos/seed/product20/400/300', category: 'kitoblar', rating: 4.0 }
 ];
 
 const LOCATIONS = ['Toshkent', 'Andijon', 'Farg\'ona', 'Namangan', 'Samarqand', 'Buxoro'];
@@ -34,6 +22,7 @@ let useBackend = false;
 let userRole = localStorage.getItem('user_role') || null;
 let activeChatProductId = null;
 let profileAvatarValue = '';
+let newProductImageValue = '';
 const bannerAds = [
   {
     brand: 'Pepsi',
@@ -204,7 +193,7 @@ function bindLandingEvents() {
 }
 
 async function handleLandingSignIn(email, password) {
-  const finalEmail = email || document.getElementById('landingEmail')?.value;
+  const finalEmail = (email || document.getElementById('landingEmail')?.value || '').trim().toLowerCase();
   const finalPassword = password || document.getElementById('landingPassword')?.value;
 
   if (!finalEmail || !finalPassword) return alert('Email va parol kiriting');
@@ -216,6 +205,7 @@ async function handleLandingSignIn(email, password) {
     applyHeaderUser(user);
     document.getElementById('landingOverlay').style.display = 'none';
     userRole = 'user';
+    localStorage.setItem('user_role', userRole);
     applyRoleUI();
     return;
   }
@@ -228,6 +218,7 @@ async function handleLandingSignIn(email, password) {
       document.getElementById('landingOverlay').style.display = 'none';
       await syncFavoritesFromBackend();
       userRole = res.user && res.user.role ? res.user.role : null;
+      if (userRole) localStorage.setItem('user_role', userRole);
       if (!userRole) showRoleSelector(); else applyRoleUI();
     }
   } catch (e) { alert('Kirish muvaffaqiyatsiz: ' + (e.message || e)); }
@@ -248,26 +239,36 @@ async function handleLandingSignup(data) {
     role = roleEl ? roleEl.value : 'user';
   }
 
-  if (!email || !password) return alert('Email va parol kiriting');
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!normalizedEmail || !password) return alert('Email va parol kiriting');
 
   if (!useBackend) {
-    const user = { name: name || email.split('@')[0], email, role };
+    const localUsers = loadState('local_users', []);
+    if (localUsers.some((u) => String(u.email || '').toLowerCase() === normalizedEmail)) {
+      alert('Bu email bilan allaqachon ro\'yxatdan o\'tilgan');
+      return;
+    }
+    const user = { name: name || normalizedEmail.split('@')[0], email: normalizedEmail, role };
+    localUsers.push({ name: user.name, email: normalizedEmail, role });
+    saveState('local_users', localUsers);
     localStorage.setItem('user', JSON.stringify(user));
     applyHeaderUser(user);
     document.getElementById('landingOverlay').style.display = 'none';
     userRole = role;
+    localStorage.setItem('user_role', userRole);
     applyRoleUI();
     return;
   }
 
   try {
-    const res = await api.signup({ name, email, password, role });
+    const res = await api.signup({ name, email: normalizedEmail, password, role });
     if (res && res.token) {
       localStorage.setItem('user', JSON.stringify(res.user));
       applyHeaderUser(res.user);
       document.getElementById('landingOverlay').style.display = 'none';
       await syncFavoritesFromBackend();
       userRole = res.user && res.user.role ? res.user.role : null;
+      if (userRole) localStorage.setItem('user_role', userRole);
       if (!userRole) showRoleSelector(); else applyRoleUI();
     }
   } catch (e) { alert('Ro\'yxatdan o\'tish muvaffaqiyatsiz: ' + (e.message || e)); }
@@ -285,6 +286,7 @@ function applyRoleUI() {
   // show add product button to sellers
   let addBtn = document.getElementById('addProductBtn');
   let myListingsBtn = document.getElementById('myListingsBtn');
+  let adminBtn = document.getElementById('adminBtn');
   const headerIcons = document.querySelector('.header-icons');
 
   if (!myListingsBtn && headerIcons) {
@@ -307,8 +309,16 @@ function applyRoleUI() {
       headerIcons.appendChild(addBtn);
     }
   }
+  if (!adminBtn && headerIcons) {
+    adminBtn = document.createElement('div');
+    adminBtn.id = 'adminBtn';
+    adminBtn.className = 'header-icon';
+    adminBtn.style.cursor = 'pointer';
+    adminBtn.innerHTML = '<i class="fas fa-shield-alt"></i><span>Admin</span>';
+    headerIcons.appendChild(adminBtn);
+  }
   if (addBtn) {
-    if (userRole === 'seller') {
+    if (userRole === 'seller' || userRole === 'admin') {
       addBtn.style.display = 'flex';
       addBtn.onclick = openAddProductModal;
       if (myListingsBtn) {
@@ -320,16 +330,45 @@ function applyRoleUI() {
       if (myListingsBtn) myListingsBtn.style.display = 'none';
     }
   }
+  if (adminBtn) {
+    if (userRole === 'admin') {
+      adminBtn.style.display = 'flex';
+      adminBtn.onclick = openAdminModal;
+    } else {
+      adminBtn.style.display = 'none';
+    }
+  }
 }
 
 function openAddProductModal() {
   const modal = document.getElementById('addProductModal');
   if (modal) modal.style.display = 'flex';
+  newProductImageValue = '';
+  const imageUrlEl = document.getElementById('newImageUrl');
+  const imageFileEl = document.getElementById('newImageFile');
+  if (imageUrlEl) {
+    imageUrlEl.value = '';
+    imageUrlEl.oninput = () => {
+      const val = imageUrlEl.value.trim();
+      if (val && val !== 'Yuklangan rasm') newProductImageValue = val;
+    };
+  }
+  if (imageFileEl) {
+    imageFileEl.value = '';
+    imageFileEl.onchange = async () => {
+      const file = imageFileEl.files && imageFileEl.files[0];
+      if (!file) return;
+      const dataUrl = await resizeImageFileToDataUrl(file);
+      newProductImageValue = dataUrl;
+      if (imageUrlEl) imageUrlEl.value = 'Yuklangan rasm';
+    };
+  }
 }
 
 function closeAddProductModal() {
   const modal = document.getElementById('addProductModal');
   if (modal) modal.style.display = 'none';
+  newProductImageValue = '';
 }
 
 async function openMyListings() {
@@ -617,8 +656,49 @@ function closeProfileModal() {
   if (modal) modal.classList.remove('open');
 }
 
+function closeAdminModal() {
+  const modal = document.getElementById('adminModal');
+  if (modal) modal.classList.remove('open');
+}
+
+async function openAdminModal() {
+  const modal = document.getElementById('adminModal');
+  const statsEl = document.getElementById('adminStats');
+  if (!modal) return;
+  modal.classList.add('open');
+  if (statsEl) statsEl.innerHTML = '<p>Ma\'lumot yuklanmoqda...</p>';
+
+  if (!useBackend || !api.getToken()) {
+    if (statsEl) statsEl.innerHTML = '<p>Admin ma\'lumotlari uchun backend kerak.</p>';
+    return;
+  }
+
+  try {
+    const res = await api.getAdminDashboard();
+    const d = res && res.dashboard ? res.dashboard : null;
+    if (!d) {
+      if (statsEl) statsEl.innerHTML = '<p>Ma\'lumot topilmadi.</p>';
+      return;
+    }
+    if (statsEl) {
+      statsEl.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+          <div class="stat-card"><strong>Buyers</strong><div>${d.totalBuyers ?? 0}</div></div>
+          <div class="stat-card"><strong>Sellers</strong><div>${d.totalSellers ?? 0}</div></div>
+          <div class="stat-card"><strong>Users</strong><div>${d.totalUsers ?? 0}</div></div>
+          <div class="stat-card"><strong>Orders</strong><div>${d.totalOrders ?? 0}</div></div>
+          <div class="stat-card"><strong>Products</strong><div>${d.totalProducts ?? 0}</div></div>
+          <div class="stat-card"><strong>Revenue</strong><div>${formatPrice(d.totalRevenue || 0)} so'm</div></div>
+        </div>
+      `;
+    }
+  } catch (e) {
+    if (statsEl) statsEl.innerHTML = `<p>Xatolik: ${e.message || e}</p>`;
+  }
+}
+
 async function saveProfile() {
-  if (!api.getToken()) {
+  if (useBackend && !api.getToken()) {
     alert('Profilni saqlash uchun login qiling');
     return;
   }
@@ -825,14 +905,27 @@ function applyFilters() {
 }
 
 async function submitNewProduct() {
-  const name = document.getElementById('newName').value;
-  const price = parseInt(document.getElementById('newPrice').value, 10) || 0;
-  const category = document.getElementById('newCategory').value || 'telefon';
-  const image = document.getElementById('newImage').value || `https://picsum.photos/seed/new${Date.now()}/400/300`;
-  const description = document.getElementById('newDescription').value || '';
-  if (!name || price <= 0) { alert('Iltimos nom va to\'g\'ri narx kiriting'); return; }
+  const name = (document.getElementById('newName')?.value || '').trim();
+  const price = parseInt(document.getElementById('newPrice')?.value, 10) || 0;
+  const stock = parseInt(document.getElementById('newStock')?.value, 10) || 0;
+  const colorRaw = (document.getElementById('newColor')?.value || '').trim().toLowerCase();
+  const category = document.getElementById('newCategory')?.value || 'telefon';
+  const imageUrlInput = (document.getElementById('newImageUrl')?.value || '').trim();
+  const description = document.getElementById('newDescription')?.value || '';
 
-  const payload = { name, price, oldPrice: Math.round(price * 1.12), category, image, description };
+  const colorMap = { 'qora': 'black', 'oq': 'white', 'qizil': 'red', "ko'k": 'blue', 'kok': 'blue', 'sariq': 'yellow' };
+  const color = colorMap[colorRaw] || colorRaw;
+
+  if (!name || price <= 0) { alert('Iltimos nom va to\'g\'ri narx kiriting'); return; }
+  if (stock <= 0) { alert('Iltimos mahsulot sonini kiriting'); return; }
+
+  const image = newProductImageValue || imageUrlInput || `https://picsum.photos/seed/new${Date.now()}/400/300`;
+  if (image && image.startsWith('data:') && image.length > 450000) {
+    alert('Rasm hajmi juda katta. Kichikroq rasm tanlang.');
+    return;
+  }
+
+  const payload = { name, price, oldPrice: Math.round(price * 1.12), category, image, description, stock, color };
 
   if (useBackend) {
     try {
@@ -847,7 +940,7 @@ async function submitNewProduct() {
       alert('Serverga yuborishda xatolik: ' + (e.message || e));
     }
   } else {
-    const newProduct = { id: Date.now(), name, price, oldPrice: Math.round(price * 1.12), category, image, rating: 4.0 };
+    const newProduct = { id: Date.now(), name, price, oldPrice: Math.round(price * 1.12), category, image, rating: 4.0, stock, color, description };
     products = attachProductMeta([newProduct, ...products]);
     saveState('product_locations', productLocations);
     applyFilters();

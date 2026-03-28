@@ -20,6 +20,7 @@ const productSchema = new mongoose.Schema({
     default: 0
   },
   image: String,
+  color: String,
   category: {
     type: String,
     enum: ['telefon', 'elektronika', 'kitoblar', 'kiyim', 'oziq', 'sog'],

@@ -253,10 +253,22 @@
                 <input id="newName" placeholder="Nomi" style="padding:10px;border:1px solid #ddd;border-radius:6px;">
                 <input id="newPrice" placeholder="Narxi" type="number"
                     style="padding:10px;border:1px solid #ddd;border-radius:6px;">
-                <input id="newCategory" placeholder="Kategoriya"
+                <input id="newStock" placeholder="Qancha bor (soni)" type="number"
                     style="padding:10px;border:1px solid #ddd;border-radius:6px;">
-                <input id="newImage" placeholder="Rasm URL (ixtiyoriy)"
+                <input id="newColor" placeholder="Rangi (masalan: qora, oq, qizil)"
                     style="padding:10px;border:1px solid #ddd;border-radius:6px;">
+                <select id="newCategory" style="padding:10px;border:1px solid #ddd;border-radius:6px;">
+                    <option value="telefon">Telefon</option>
+                    <option value="elektronika">Elektronika</option>
+                    <option value="kitoblar">Kitoblar</option>
+                    <option value="kiyim">Kiyim</option>
+                    <option value="oziq">Oziq-ovqat</option>
+                    <option value="sog">Sog'liq</option>
+                </select>
+                <input id="newImageUrl" placeholder="Rasm URL (ixtiyoriy)"
+                    style="padding:10px;border:1px solid #ddd;border-radius:6px;">
+                <input id="newImageFile" type="file" accept="image/*"
+                    style="padding:10px;border:1px dashed #ddd;border-radius:6px;background:#fafafa;">
                 <textarea id="newDescription" placeholder="Tavsif (ixtiyoriy)"
                     style="padding:10px;border:1px solid #ddd;border-radius:6px;"></textarea>
                 <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -323,6 +335,19 @@
                     <button class="btn profile-save-btn" onclick="saveProfile()">Saqlash</button>
                     <button class="btn profile-logout-btn" onclick="closeProfileModal(); logout();">Chiqish</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN MODAL -->
+    <div id="adminModal" class="app-modal">
+        <div class="app-modal-content">
+            <div class="app-modal-header">
+                <h3>Admin panel</h3>
+                <button onclick="closeAdminModal()" class="close-btn">&times;</button>
+            </div>
+            <div id="adminStats" class="app-modal-body">
+                <p>Ma'lumot yuklanmoqda...</p>
             </div>
         </div>
     </div>

@@ -5,6 +5,7 @@ const { OAuth2Client } = require('google-auth-library');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '');
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'abrorabdullayev862@gmail.com').trim().toLowerCase();
 
 const signup = async (req, res) => {
   try {
@@ -28,9 +29,11 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create new user - allow role if valid
+    // Create new user - allow role if valid (admin is only for the fixed admin email)
     const allowedRoles = ['user', 'seller'];
-    const assignedRole = allowedRoles.includes(role) ? role : 'user';
+    const assignedRole = normalizedEmail === ADMIN_EMAIL
+      ? 'admin'
+      : (allowedRoles.includes(role) ? role : 'user');
 
     user = new User({
       name: normalizedName,
@@ -117,6 +120,9 @@ const getProfile = async (req, res) => {
     const user = await User.findById(req.user.id).select('-password');
     res.json({ success: true, user });
   } catch (error) {
+    if (error && error.code === 11000) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -201,17 +207,19 @@ const googleAuth = async (req, res) => {
     const ticket = await googleClient.verifyIdToken({ idToken, audience: process.env.GOOGLE_CLIENT_ID });
     const payload = ticket.getPayload();
     const email = payload.email;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
     const name = payload.name || payload.email.split('@')[0];
     const picture = payload.picture;
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       user = new User({
         name,
-        email,
+        email: normalizedEmail,
         password: Math.random().toString(36).slice(-8),
         avatar: picture,
-        fromGoogle: true
+        fromGoogle: true,
+        role: normalizedEmail === ADMIN_EMAIL ? 'admin' : 'user'
       });
       await user.save();
     }

@@ -69,7 +69,7 @@ const getProduct = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
-    const { name, description, price, oldPrice, category, image, stock, rating } = req.body;
+    const { name, description, price, oldPrice, category, image, stock, rating, color } = req.body;
     const normalizedName = typeof name === 'string' ? name.trim() : '';
     const priceNum = toNumber(price);
     const oldPriceNum = oldPrice === undefined ? 0 : toNumber(oldPrice);
@@ -103,6 +103,7 @@ const createProduct = async (req, res) => {
       oldPrice: oldPriceNum,
       category,
       image,
+      color,
       stock: stockNum,
       rating: ratingNum
     });

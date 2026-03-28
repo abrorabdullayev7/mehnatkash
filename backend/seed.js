@@ -62,8 +62,8 @@ function generateProducts() {
 
 const seedAdmin = {
   name: "Admin",
-  email: "admin@uzum.uz",
-  password: "admin123",
+  email: process.env.ADMIN_EMAIL || "abrorabdullayev862@gmail.com",
+  password: process.env.ADMIN_PASSWORD || "admin123",
   phone: "+998901234567",
   role: "admin"
 };
