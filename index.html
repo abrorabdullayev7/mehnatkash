@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banan Market - By Abrorbek Abdullayev</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="./src/img/ChatGPT Image Mar 28, 2026, 07_33_23 PM.png" alt="Banana-Market Logosi">
+            </div>
+            
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Qidirish..." class="search-input">
+                <button class="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="header-icons">
+                <div class="header-icon" id="favoritesBtn" onclick="toggleFavoritesModal()">
+                    <i class="far fa-heart"></i>
+                    <span>Sevimlilar</span>
+                    <span id="favoritesCount" class="mini-badge">0</span>
+                </div>
+                <div class="header-icon cart-icon" onclick="toggleCart()">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Savat</span>
+                    <span id="cartCount" class="mini-badge">0</span>
+                </div>
+                <div class="header-icon" id="authContainer">
+                    <button id="emailLoginBtn" onclick="showLoginModal()"
+                        style="padding:8px 16px;border-radius:12px;border:none;background:var(--primary-color);color:#1a1a1a;font-weight:700;font-size:13px;cursor:pointer;">Kirish</button>
+                    <div id="userInfo" style="display:none; align-items:center; gap:8px;">
+                        <img id="userAvatar" src="" alt=""
+                            style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);">
+                        <span id="userName" style="font-weight:700;"></span>
+                        <div class="user-dropdown">
+                            <button onclick="openProfileModal()" class="mini-btn">Profil</button>
+                            <button onclick="logout()" class="mini-btn"
+                                style="background:#ff4757;color:white;">Chiqish</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <button class="nav-btn active" data-category="all">Barchasi</button>
+            <button class="nav-btn" data-category="telefon">Telefonlar</button>
+            <button class="nav-btn" data-category="elektronika">Elektronika</button>
+            <button class="nav-btn" data-category="kitoblar">Kitoblar</button>
+            <button class="nav-btn" data-category="kiyim">Kiyim</button>
+        </div>
+    </nav>
+
+    <!-- BANNER/SLIDER -->
+    <section class="banner-section">
+        <div class="container">
+            <div class="banner">
+                <div class="slider">
+                    <div class="slide active">
+                        <div class="slide-content">
+                            <h6>Exclusive Arrival</h6>
+                            <h2 id="adTitle">Summer Collection 2026</h2>
+                            <p id="adDesc">Discover the new era of fresh groceries and premium electronics.</p>
+                            <button id="adCtaBtn" class="banner-btn">Shop Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SHOP LAYOUT -->
+    <section class="shop-section">
+        <div class="container">
+            <div class="shop-layout">
+                <!-- SIDEBAR FILTERS -->
+                <aside class="sidebar">
+                    <div class="filter-group">
+                        <h4 class="filter-title">Kategoriyalar</h4>
+                        <div class="filter-options">
+                            <div class="filter-item active" data-category="all">Barchasi</div>
+                            <div class="filter-item" data-category="telefon">Telefonlar</div>
+                            <div class="filter-item" data-category="elektronika">Elektronika</div>
+                            <div class="filter-item" data-category="kitoblar">Kitoblar</div>
+                            <div class="filter-item" data-category="kiyim">Kiyim</div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4 class="filter-title">Narx oralig'i</h4>
+                        <div class="price-filter-container">
+                            <div class="price-inputs">
+                                <div class="price-input-box">
+                                    <span class="price-input-prefix">dan</span>
+                                    <span id="priceMinDisplay" class="price-input-value">0</span>
+                                </div>
+                                <div class="price-input-box">
+                                    <span class="price-input-prefix">oldin</span>
+                                    <span id="priceMaxDisplay" class="price-input-value">50000000</span>
+                                </div>
+                            </div>
+                            <div class="price-ranges">
+                                <div class="price-range-track"></div>
+                                <div id="priceRangeFill" class="price-range-fill"></div>
+                                <input type="range" id="priceFilterMin" min="0" max="50000000" value="0"
+                                    class="price-range price-range-min">
+                                <input type="range" id="priceFilterMax" min="0" max="50000000" value="50000000"
+                                    class="price-range price-range-max">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4 class="filter-title">Brandlar</h4>
+                        <div class="filter-options brand-filter">
+                            <label class="check-container">Apple
+                                <input type="checkbox" data-brand="apple">
+                                <span class="checkmark"></span>
+                            </label>
+                            <label class="check-container">Samsung
+                                <input type="checkbox" data-brand="samsung">
+                                <span class="checkmark"></span>
+                            </label>
+                            <label class="check-container">Xiaomi
+                                <input type="checkbox" data-brand="xiaomi">
+                                <span class="checkmark"></span>
+                            </label>
+                            <label class="check-container">Sony
+                                <input type="checkbox" data-brand="sony">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4 class="filter-title">Ranglar</h4>
+                        <div class="color-options">
+                            <div class="color-swatch" data-color="black" style="background:#1a1a1a;" title="Qora"></div>
+                            <div class="color-swatch" data-color="white" style="background:#fff; border:1px solid #ddd;"
+                                title="Oq"></div>
+                            <div class="color-swatch" data-color="red" style="background:#ff4757;" title="Qizil"></div>
+                            <div class="color-swatch" data-color="blue" style="background:#2e86de;" title="Moviy"></div>
+                            <div class="color-swatch" data-color="yellow" style="background:#feca57;" title="Sariq"></div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- MAIN CONTENT -->
+                <main class="main-content">
+                    <div class="content-header">
+                        <h3 class="results-count">Barcha mahsulotlar</h3>
+                        <div class="sort-wrapper">
+                            <label>Saralash:</label>
+                            <select id="sortFilter" class="sort-select">
+                                <option value="default">Odatiy</option>
+                                <option value="price-low">Arzonroq</option>
+                                <option value="price-high">Qimmatroq</option>
+                                <option value="new">Yangi kelganlar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="catalog" id="catalog"></div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- CART SIDEBAR -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Savat</h3>
+            <button onclick="toggleCart()" class="close-btn">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p class="empty-cart">Savat bo'sh</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <strong>Jami:</strong>
+                <span id="cartTotal">0 so'm</span>
+            </div>
+            <button class="checkout-btn">Sotib olish</button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-column">
+                <div class="logo" style="margin-bottom:20px;"> 
+                    <span style="color:white">banan</span>
+                </div>
+                <p style="font-size:14px;line-height:1.8;opacity:0.7;">The next generation marketplace for premium
+                    products. Experience the future of shopping with Banan.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Marketplace</h4>
+                <ul>
+                    <li><a href="#">Summer Collection</a></li>
+                    <li><a href="#">Electronics</a></li>
+                    <li><a href="#">Groceries</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Connect</h4>
+                <div style="display:flex;gap:16px;margin-top:12px;">
+                    <a href="https://www.instagram.com/abdullayevv_a.a"><i class="fab fa-instagram"></i></a>
+                    <a href=""><i class="fab fa-twitter"></i></a>
+                    <a href="https://t.me/bananamarket1"><i class="fab fa-telegram-plane"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Banan. Barcha huquqlar himoyalangan.</p>
+        </div>
+    </footer>
+
+    <!-- ADD PRODUCT MODAL -->
+    <div id="addProductModal"
+        style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:9999;">
+        <div
+            style="background:#fff;padding:20px;border-radius:10px;max-width:560px;width:94%;box-shadow:0 12px 48px rgba(0,0,0,0.25);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3 style="margin:0">Mahsulot qo'shish</h3>
+                <button onclick="closeAddProductModal()"
+                    style="background:transparent;border:none;font-size:20px;cursor:pointer;">&times;</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <input id="newName" placeholder="Nomi" style="padding:10px;border:1px solid #ddd;border-radius:6px;">
+                <input id="newPrice" placeholder="Narxi" type="number"
+                    style="padding:10px;border:1px solid #ddd;border-radius:6px;">
+                <input id="newCategory" placeholder="Kategoriya"
+                    style="padding:10px;border:1px solid #ddd;border-radius:6px;">
+                <input id="newImage" placeholder="Rasm URL (ixtiyoriy)"
+                    style="padding:10px;border:1px solid #ddd;border-radius:6px;">
+                <textarea id="newDescription" placeholder="Tavsif (ixtiyoriy)"
+                    style="padding:10px;border:1px solid #ddd;border-radius:6px;"></textarea>
+                <div style="display:flex;gap:8px;justify-content:flex-end;">
+                    <button onclick="submitNewProduct()" class="btn">Yaratish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY -->
+    <div class="overlay" id="overlay" onclick="toggleCart()"></div>
+
+    <!-- FAVORITES MODAL -->
+    <div id="favoritesModal" class="app-modal">
+        <div class="app-modal-content">
+            <div class="app-modal-header">
+                <h3>Sevimli mahsulotlar</h3>
+                <button onclick="toggleFavoritesModal()" class="close-btn">&times;</button>
+            </div>
+            <div id="favoritesList" class="app-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- CHAT MODAL -->
+    <div id="chatModal" class="app-modal">
+        <div class="app-modal-content">
+            <div class="app-modal-header">
+                <h3 id="chatTitle">Sotuvchi bilan chat</h3>
+                <button onclick="closeChatModal()" class="close-btn">&times;</button>
+            </div>
+            <div id="chatMessages" class="app-modal-body chat-body"></div>
+            <div class="chat-input-row">
+                <input id="chatInput" type="text" placeholder="Xabar yozing...">
+                <button class="btn chat-send" onclick="sendChatMessage()">Yuborish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div id="profileModal" class="app-modal">
+        <div class="app-modal-content">
+            <div class="app-modal-header">
+                <h3>Meni profilim</h3>
+                <button onclick="closeProfileModal()" class="close-btn">&times;</button>
+            </div>
+            <div class="app-modal-body profile-body">
+                <div class="profile-avatar-block">
+                    <img id="profileAvatarPreview" src="" alt="avatar">
+                    <input id="profileAvatarFile" type="file" accept="image/*">
+                </div>
+                <input id="profileName" type="text" placeholder="Ism">
+                <input id="profileEmail" type="email" placeholder="Email" disabled>
+                <input id="profilePhone" type="text" inputmode="numeric" maxlength="13"
+                    placeholder="Telefon (+998901234567)">
+                <select id="profileRegion">
+                    <option value="">Viloyatni tanlang</option>
+                </select>
+                <select id="profileDistrict" disabled>
+                    <option value="">Tumanni tanlang</option>
+                </select>
+                <input id="profileAddressLine" type="text" placeholder="Ko'cha / uy / mo'ljal (ixtiyoriy)">
+                <input id="profileAvatarUrl" type="text" placeholder="Avatar URL (ixtiyoriy)">
+                <div class="profile-actions">
+                    <button class="btn profile-save-btn" onclick="saveProfile()">Saqlash</button>
+                    <button class="btn profile-logout-btn" onclick="closeProfileModal(); logout();">Chiqish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="./api.js"></script>
+    <script src="./app.js"></script>
+    <!-- Auth modal (Sign In / Sign Up) -->
+    <div id="authModal"
+        style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:9999;">
+        <div
+            style="background:#fff;padding:20px;border-radius:10px;max-width:480px;width:94%;box-shadow:0 12px 48px rgba(0,0,0,0.25);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3 style="margin:0">Banan - Kirish</h3>
+                <button onclick="hideAuthModal()"
+                    style="background:transparent;border:none;font-size:20px;cursor:pointer;">&times;</button>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <button id="tabLogin" onclick="switchAuthTab('login')"
+                    style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--primary-color);background:var(--primary-color);color:#fff;">Kirish</button>
+                <button id="tabSignup" onclick="switchAuthTab('signup')"
+                    style="flex:1;padding:8px;border-radius:6px;border:1px solid #ddd;background:#fff;">Ro'yxatdan
+                    o'tish</button>
+            </div>
+
+            <div id="authContent">
+                <div id="loginForm">
+                    <input id="loginEmail" type="email" placeholder="Email"
+                        style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;">
+                    <input id="loginPassword" type="password" placeholder="Parol"
+                        style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;">
+                    <div style="display:flex;justify-content:flex-end;gap:8px;">
+                        <button onclick="performLogin()"
+                            style="padding:10px 14px;border-radius:6px;border:none;background:var(--primary-color);color:#fff;">Kirish</button>
+                    </div>
+                    <div style="text-align:center;margin:12px 0;color:#666">yoki</div>
+                    <div id="googleSignInArea" style="display:flex;justify-content:center;margin-top:8px;"></div>
+                </div>
+
+                <div id="signupForm" style="display:none;">
+                    <input id="signupName" type="text" placeholder="Ism"
+                        style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;">
+                    <input id="signupEmail" type="email" placeholder="Email"
+                        style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;">
+                    <select id="signupRole"
+                        style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;">
+                        <option value="user">Xaridor (Buyer)</option>
+                        <option value="seller">Sotuvchi (Seller)</option>
+                    </select>
+                    <input id="signupPassword" type="password" placeholder="Parol"
+                        style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;">
+                    <div style="display:flex;justify-content:flex-end;gap:8px;">
+                        <button onclick="performSignup()"
+                            style="padding:10px 14px;border-radius:6px;border:none;background:#28a745;color:#fff;">Ro'yxatdan
+                            o'tish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Helper UI functions
+        function showLoginModal() { showAuthModal('login'); }
+        function hideLoginModal() { hideAuthModal(); }
+
+        function showAuthModal(defaultTab = 'login') {
+            document.getElementById('authModal').style.display = 'flex';
+            switchAuthTab(defaultTab);
+            // render Google button inside modal if available
+            const target = document.getElementById('googleSignInArea');
+            const googleBtn = document.getElementById('googleSignInButton');
+            if (googleBtn && target) {
+                target.innerHTML = '';
+                if (googleBtn.children.length) target.appendChild(googleBtn.children[0].cloneNode(true));
+            }
+        }
+
+        function hideAuthModal() { document.getElementById('authModal').style.display = 'none'; }
+
+        function switchAuthTab(tab) {
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+            document.getElementById('tabLogin').style.background = tab === 'login' ? 'var(--primary-color)' : '#fff';
+            document.getElementById('tabLogin').style.color = tab === 'login' ? '#fff' : '#000';
+            document.getElementById('tabSignup').style.background = tab === 'signup' ? 'var(--primary-color)' : '#fff';
+            document.getElementById('tabSignup').style.color = tab === 'signup' ? '#fff' : '#000';
+        }
+
+        // Use exported functions from app.js
+        async function performLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            if (window.handleLandingSignIn) {
+                await window.handleLandingSignIn(email, password);
+                if (localStorage.getItem('user')) hideAuthModal();
+            }
+        }
+
+        async function performSignup() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const role = document.getElementById('signupRole') ? document.getElementById('signupRole').value : 'user';
+            if (window.handleLandingSignup) {
+                await window.handleLandingSignup({ name, email, password, role });
+                if (localStorage.getItem('user')) hideAuthModal();
+            }
+        }
+
+        async function initGoogleButton() {
+            try {
+                // Check if backend is available first indirectly via api object if it exists
+                const res = await fetch('http://localhost:5000/api/auth/google-client').catch(() => null);
+                if (!res || !res.ok) throw new Error('Backend offline');
+
+                const data = await res.json();
+                const clientId = data && data.clientId;
+
+                if (!clientId) {
+                    throw new Error('No client ID');
+                }
+
+                window.handleCredentialResponse = async (response) => {
+                    try {
+                        const result = await api.googleLogin(response.credential);
+                        if (result && result.token) {
+                            api.setToken(result.token);
+                            localStorage.setItem('user', JSON.stringify(result.user));
+                            if (window.showUser) window.showUser(result.user);
+                            if (window.syncFavoritesFromBackend) await window.syncFavoritesFromBackend();
+                            hideLoginModal();
+                        }
+                    } catch (e) { console.error(e); }
+                };
+
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleCredentialResponse
+                });
+
+                google.accounts.id.renderButton(
+                    document.getElementById('googleSignInButton'),
+                    { theme: 'outline', size: 'small' }
+                );
+
+                google.accounts.id.renderButton(
+                    document.getElementById('googleSignInArea'),
+                    { theme: 'outline', size: 'large' }
+                );
+            } catch (e) {
+                console.warn('Google Sign-In disabled or backend offline');
+                const wrapper = document.getElementById('googleSignInButton');
+                if (wrapper) wrapper.style.display = 'none';
+            }
+        }
+
+        // Initialize Google Sign-In but don't let it block
+        initGoogleButton();
+
+        // Auto-open auth modal for first-time visitors (only if not logged in)
+        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (storedUser && window.showUser) window.showUser(storedUser);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!storedUser && !localStorage.getItem('seenAuthModal')) {
+            localStorage.setItem('seenAuthModal', '1');
+            setTimeout(() => showAuthModal('login'), 300);
+        } else if (storedUser && urlParams.get('profile') === '1') {
+            // Wait slightly for app to initialize
+            setTimeout(() => { if (window.openProfileModal) window.openProfileModal(); }, 500);
+        }
+    </script>
+</body>
+
+</html>

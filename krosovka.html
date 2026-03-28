@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahsulot - BANAN</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: #f8f9fa;
+    color: #1a1a1a;
+    }
+
+    .product-detail {
+    max-width: 1440px;
+    margin: 40px auto;
+    padding: 0 24px;
+    }
+
+    .detail-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f1f3f5;
+    }
+
+    .detail-image img {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 16px;
+    }
+
+    .detail-info h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    font-weight: 800;
+    color: #1a1a1a;
+    letter-spacing: -1px;
+    }
+
+    .detail-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    }
+
+    .rating-stars {
+    display: inline-flex;
+    gap: 4px;
+    }
+
+    .rating-star {
+    position: relative;
+    display: inline-block;
+    font-size: 18px;
+    line-height: 1;
+    color: #d5dbe4;
+    }
+
+    .rating-star::before {
+    content: '\2605';
+    position: absolute;
+    inset: 0;
+    width: var(--fill, 0%);
+    overflow: hidden;
+    color: #f5c518;
+    }
+
+    .rating-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #94a3b8;
+    }
+
+    .detail-price {
+    font-size: 48px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    letter-spacing: -1px;
+    }
+
+    .detail-old-price {
+    font-size: 32px;
+    color: #94a3b8;
+    text-decoration: line-through;
+    margin-bottom: 24px;
+    }
+
+    .detail-desc {
+    color: #64748b;
+    line-height: 1.8;
+    margin-bottom: 28px;
+    font-size: 21px;
+    }
+
+    .purchase-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    }
+
+    .quantity-selector {
+    min-width: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    }
+
+    .quantity-selector label {
+    font-weight: 700;
+    font-size: 15px;
+    color: #334155;
+    }
+
+    .quantity-selector input {
+    width: 100%;
+    height: 52px;
+    border: 1px solid #d5dbe4;
+    border-radius: 12px;
+    padding: 0 14px;
+    font-size: 18px;
+    font-weight: 700;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .quantity-selector input:focus {
+    border-color: #f5d93d;
+    box-shadow: 0 0 0 3px rgba(245, 217, 61, 0.25);
+    }
+
+    .add-to-cart-btn {
+    flex: 1;
+    min-height: 52px;
+    padding: 14px 20px;
+    background: var(--primary-color);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 14px;
+    font-size: 26px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(255, 217, 61, 0.2);
+    }
+
+    .add-to-cart-btn:hover {
+    background: #f3ce34;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 217, 61, 0.3);
+    }
+
+    .specs {
+    margin-top: 28px;
+    background: #ffffff;
+    border: 1px solid #f1f3f5;
+    border-radius: 16px;
+    padding: 24px 28px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    }
+
+    .specs h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    }
+
+    .spec-item {
+    display: grid;
+    grid-template-columns: minmax(160px, 220px) 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #eef2f6;
+    }
+
+    .spec-item:first-of-type {
+    border-top: none;
+    }
+
+    .spec-key {
+    color: #64748b;
+    font-weight: 600;
+    }
+
+    .spec-value {
+    color: #0f172a;
+    font-weight: 600;
+    }
+
+    .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #1a1a1a;
+    text-decoration: none;
+    cursor: pointer;
+    margin-bottom: 32px;
+    font-weight: 700;
+    font-size: 14px;
+    }
+
+    .back-btn:hover {
+    opacity: 0.7;
+    }
+
+    @media (max-width: 1024px) {
+    .detail-container {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    }
+
+    .detail-image img {
+    max-width: 100%;
+    }
+
+    .purchase-row {
+    flex-direction: column;
+    align-items: stretch;
+    }
+
+    .quantity-selector {
+    max-width: 180px;
+    }
+
+    .detail-price {
+    font-size: 40px;
+    }
+
+    .detail-old-price {
+    font-size: 26px;
+    }
+
+    .detail-desc {
+    font-size: 18px;
+    }
+
+    .spec-item {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    }
+    }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo" onclick="window.location.href='index.html'">
+                <img src="./src/img/ChatGPT Image Mar 28, 2026, 07_33_23 PM.png" alt="Banana-Market Logosi">
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Qidirish..." class="search-input">
+                <button class="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="header-icons">
+                <div class="header-icon">
+                    <i class="far fa-heart"></i>
+                    <span>Sevimlilar</span>
+                </div>
+                <div class="header-icon cart-icon" onclick="toggleCart()">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span id="cartCount">0</span>
+                </div>
+                <div class="header-icon" id="authContainer">
+                    <button id="emailLoginBtn" onclick="showLoginModal()"
+                        style="padding:8px 16px;border-radius:12px;border:none;background:var(--primary-color);color:#1a1a1a;font-weight:700;font-size:13px;cursor:pointer;">Kirish</button>
+                    <div id="userInfo" style="display:none; align-items:center; gap:8px;">
+                        <img id="userAvatar" src="" alt=""
+                            style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);">
+                        <span id="userName" style="font-weight:700;"></span>
+                        <div class="user-dropdown">
+                            <button onclick="window.location.href='index.html?profile=1'"
+                                class="mini-btn">Profil</button>
+                            <button onclick="logout()" class="mini-btn"
+                                style="background:#ff4757;color:white;">Chiqish</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAHSULOT DETALLAR -->
+    <div class="product-detail">
+        <a class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Orqaga</a>
+
+        <div class="detail-container">
+            <div class="detail-image">
+                <img id="productImage" src="" alt="Mahsulot">
+            </div>
+            <div class="detail-info">
+                <h1 id="productName"></h1>
+                <div class="detail-rating" id="productRating"></div>
+                <div class="detail-price" id="productPrice"></div>
+                <div class="detail-old-price" id="productOldPrice"></div>
+                <p class="detail-desc" id="productDesc"></p>
+
+                <div class="purchase-row">
+                    <div class="quantity-selector">
+                        <label for="quantity">Miqdor</label>
+                        <input type="number" id="quantity" value="1" min="1" max="99">
+                    </div>
+                    <button class="add-to-cart-btn" id="addBtn">Savatga qo'shish</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SPECS -->
+        <div class="specs">
+            <h3><i class="fa-regular fa-clipboard"></i> Mahsulot xususiyatlari</h3>
+            <div class="spec-item">
+                <div class="spec-key">Kategoriya</div>
+                <div class="spec-value" id="specCategory"></div>
+            </div>
+            <div class="spec-item">
+                <div class="spec-key">Zaxira soni</div>
+                <div class="spec-value" id="specStock"></div>
+            </div>
+            <div class="spec-item">
+                <div class="spec-key">Yetkazib berish</div>
+                <div class="spec-value">Toshkent: 1-2 kun | Viloyatlar: 2-3 kun</div>
+            </div>
+            <div class="spec-item">
+                <div class="spec-key">Kafolat</div>
+                <div class="spec-value">12 oylik ishonch kafolati</div>
+            </div>
+            <div class="spec-item">
+                <div class="spec-key">Qaytarish</div>
+                <div class="spec-value">Satilgandan keyin 30 kun ichida</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART SIDEBAR -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Savat</h3>
+            <button onclick="toggleCart()" class="close-btn">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p class="empty-cart">Savat bo'sh</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <strong>Jami:</strong>
+                <span id="cartTotal">0 so'm</span>
+            </div>
+            <button class="checkout-btn">Sotib olish</button>
+        </div>
+    </div>
+
+    <!-- OVERLAY -->
+    <div class="overlay" id="overlay" onclick="toggleCart()"></div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="./api.js"></script>
+    <script>
+        // Get product ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+
+        let product = null;
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function generateDefaultProducts(count = 100) {
+            const categories = ['telefon', 'elektronika', 'kiyim', 'oziq', 'kitoblar'];
+            const baseNames = ['Pro', 'Max', 'Ultra', 'Plus', 'Lite'];
+            const producers = ['BrandA', 'BrandB', 'BrandC', 'BrandD', 'BrandE'];
+            const basePrices = {
+                telefon: 15000000,
+                elektronika: 4000000,
+                kiyim: 800000,
+                oziq: 50000,
+                kitoblar: 120000
+            };
+            const products = [];
+
+            for (let i = 1; i <= count; i++) {
+                const idx = i - 1;
+                const category = categories[idx % categories.length];
+                const producer = producers[idx % producers.length];
+                const model = baseNames[idx % baseNames.length];
+                const name = `${producer} ${model} Model ${i}`;
+                const price = basePrices[category] + (idx * 10000) % 5000000;
+                const oldPrice = Math.round(price * 1.15 / 1000) * 1000;
+                const rating = Math.round((3.5 + ((i % 15) / 10)) * 10) / 10;
+                const image = `https://picsum.photos/seed/product${i}/400/300`;
+
+                products.push({
+                    id: i,
+                    name,
+                    price,
+                    oldPrice,
+                    image,
+                    category,
+                    rating
+                });
+            }
+
+            return products;
+        }
+
+        async function loadProduct() {
+            try {
+                // Try backend first
+                if (typeof api !== 'undefined' && productId) {
+                    const result = await api.getProduct(productId);
+                    if (result && result.success && result.product) {
+                        product = result.product;
+                    }
+                }
+            } catch (error) {
+                console.log('Backend error, will try local fallback');
+            }
+
+            // Local fallback: generate same default dataset as app.js and find by numeric id
+            if (!product && productId) {
+                const localProducts = generateDefaultProducts(100);
+                product = localProducts.find(p => String(p.id) === String(productId));
+            }
+
+            if (!product) {
+                document.querySelector('.product-detail').innerHTML = '<h2>Mahsulot topilmadi</h2>';
+                return;
+            }
+
+            displayProduct();
+        }
+
+        function buildRatingMarkup(value, maxStars = 5) {
+            const rating = Math.max(0, Math.min(Number(value) || 0, maxStars));
+            const stars = Array.from({ length: maxStars }, (_, index) => {
+                const fill = Math.max(0, Math.min(1, rating - index));
+                return `<span class="rating-star" style="--fill:${(fill * 100).toFixed(0)}%;">&#9733;</span>`;
+            }).join('');
+
+            return `<span class="rating-stars">${stars}</span><span class="rating-value">(${rating.toFixed(1)})</span>`;
+        }
+
+        function displayProduct() {
+            if (!product) return;
+
+
+            document.getElementById('productImage').src = product.image;
+            document.getElementById('productName').textContent = product.name;
+            document.getElementById('productPrice').textContent = formatPrice(product.price) + ' so\'m';
+            document.getElementById('productOldPrice').textContent = formatPrice(product.oldPrice) + ' so\'m';
+            document.getElementById('productDesc').textContent = product.description || 'Yuqori sifatli mahsulot';
+            document.getElementById('productRating').innerHTML = buildRatingMarkup(product.rating);
+            document.getElementById('specCategory').textContent = product.category || 'Elektronika';
+            document.getElementById('specStock').textContent = `${product.stock || 100} ta mavjud`;
+
+            document.getElementById('addBtn').addEventListener('click', addToCartFromDetail);
+        }
+
+        function addToCartFromDetail() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+            for (let i = 0; i < quantity; i++) {
+                addToCartDetail();
+            }
+            alert('Savatga qo\'shildi!');
+        }
+
+        function addToCartDetail() {
+            const id = product._id || product.id;
+            const existing = cart.find(item => String(item.id) === String(id));
+
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({
+                    id: id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: 1
+                });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartUI();
+        }
+
+        function formatPrice(price) {
+            return price.toLocaleString('uz-UZ');
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => String(item.id) !== String(productId));
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartUI();
+        }
+
+        function updateQuantity(productId, quantity) {
+            const item = cart.find(item => String(item.id) === String(productId));
+            if (item) {
+                item.quantity = Math.max(1, quantity);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartUI();
+            }
+        }
+
+        function updateCartUI() {
+            const cartItems = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            const cartTotal = document.getElementById('cartTotal');
+
+            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p class="empty-cart">Savat bo\'sh</p>';
+                cartTotal.textContent = '0 so\'m';
+                return;
+            }
+
+            cartItems.innerHTML = cart.map(item => `
+            <div class="cart-item">
+              <img src="${item.image}" alt="${item.name}">
+              <div class="cart-item-info">
+                <div class="cart-item-name">${item.name}</div>
+                <div class="cart-item-price">${formatPrice(item.price)} so'm</div>
+                <div class="cart-item-qty">
+                  <button class="qty-btn" onclick="updateQuantity('${item.id}', ${item.quantity - 1})">−</button>
+                  <span>${item.quantity}</span>
+                  <button class="qty-btn" onclick="updateQuantity('${item.id}', ${item.quantity + 1})">+</button>
+                </div>
+                <div class="remove-item" onclick="removeFromCart('${item.id}')">Olib tashla</div>
+              </div>
+            </div>
+          `).join('');
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotal.textContent = `${formatPrice(total)} so'm`;
+        }
+
+        function toggleCart() {
+            document.getElementById('cartSidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // Auth related UI cleanup
+        const modalHtml = `
+        <div id="loginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:9999;">
+            <div style="background:#fff;padding:20px;border-radius:8px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+                <h3 style="margin-top:0">Kirish</h3>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <input id="loginEmail" type="email" placeholder="Email" style="padding:8px;border:1px solid #ddd;border-radius:6px;">
+                    <input id="loginPassword" type="password" placeholder="Parol" style="padding:8px;border:1px solid #ddd;border-radius:6px;">
+                    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+                        <button onclick="hideLoginModal()" style="padding:8px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;">Bekor</button>
+                        <button onclick="performLogin()" style="padding:8px 12px;border-radius:6px;border:none;background:var(--primary-color);color:#fff;">Kirish</button>
+                    </div>
+                    <div id="googleSignInArea" style="display:flex;justify-content:center;margin-top:8px;"></div>
+                </div>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        function showLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
+        function hideLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+
+        async function performLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            if (typeof api !== 'undefined' && email && password) {
+                try {
+                    const result = await api.login(email, password);
+                    if (result && result.token) {
+                        api.setToken(result.token);
+                        localStorage.setItem('user', JSON.stringify(result.user));
+                        showUser(result.user);
+                        hideLoginModal();
+                    }
+                } catch (e) { alert('Kirish muvaffaqiyatsiz: ' + e.message); }
+            } else {
+                // Local fallback
+                const user = { name: email.split('@')[0], email };
+                localStorage.setItem('user', JSON.stringify(user));
+                showUser(user);
+                hideLoginModal();
+            }
+        }
+
+        function showUser(user) {
+            if (!user) return;
+            const googleBtn = document.getElementById('googleSignInButton');
+            const emailBtn = document.getElementById('emailLoginBtn');
+            const info = document.getElementById('userInfo');
+            const name = document.getElementById('userName');
+            const avatar = document.getElementById('userAvatar');
+
+            if (googleBtn) googleBtn.style.display = 'none';
+            if (emailBtn) emailBtn.style.display = 'none';
+            if (info) info.style.display = 'inline-flex';
+            if (name) name.textContent = user.name || user.email.split('@')[0];
+            if (avatar && user.avatar) avatar.src = user.avatar;
+        }
+
+        function logout() {
+            if (typeof api !== 'undefined') api.logout();
+            localStorage.removeItem('user');
+            location.reload();
+        }
+
+        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (storedUser) showUser(storedUser);
+
+        async function initGoogleButton() {
+            try {
+                const res = await fetch('/api/auth/google-client');
+                const data = await res.json();
+                const clientId = data.clientId;
+                if (!clientId) return;
+
+                window.handleCredentialResponse = async (response) => {
+                    try {
+                        const result = await api.googleLogin(response.credential);
+                        if (result && result.token) {
+                            api.setToken(result.token);
+                            localStorage.setItem('user', JSON.stringify(result.user));
+                            showUser(result.user);
+                            hideLoginModal();
+                        }
+                    } catch (e) { console.error(e); }
+                };
+
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleCredentialResponse
+                });
+
+                google.accounts.id.renderButton(
+                    document.getElementById('googleSignInButton'),
+                    { theme: 'outline', size: 'small' }
+                );
+
+                google.accounts.id.renderButton(
+                    document.getElementById('googleSignInArea'),
+                    { theme: 'outline', size: 'large' }
+                );
+            } catch (e) { console.error('Google init failed', e); }
+        }
+
+        initGoogleButton();
+
+        loadProduct();
+        updateCartUI();
+    </script>
+</body>
+
+</html>
