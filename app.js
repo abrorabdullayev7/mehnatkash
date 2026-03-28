@@ -17,6 +17,7 @@ const COLOR_PALETTE = ['black', 'white', 'red', 'blue', 'yellow'];
 let productLocations = loadState('product_locations', {});
 let favorites = loadState('favorites', []);
 let products = attachProductMeta(defaultProducts);
+saveState('products_cache', products);
 let cart = loadCart();
 let useBackend = false;
 let userRole = localStorage.getItem('user_role') || null;
@@ -943,6 +944,7 @@ async function submitNewProduct() {
     const newProduct = { id: Date.now(), name, price, oldPrice: Math.round(price * 1.12), category, image, rating: 4.0, stock, color, description };
     products = attachProductMeta([newProduct, ...products]);
     saveState('product_locations', productLocations);
+    saveState('products_cache', products);
     applyFilters();
     closeAddProductModal();
   }
@@ -955,6 +957,7 @@ async function loadProductsFromBackend() {
     if (result.success && result.products.length > 0) {
       products = attachProductMeta(result.products);
       saveState('product_locations', productLocations);
+      saveState('products_cache', products);
     }
   } catch (error) {
     console.error('Failed to load from backend:', error);
