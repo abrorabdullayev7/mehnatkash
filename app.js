@@ -10,6 +10,9 @@ const defaultProducts = [
   { id: 8, name: 'Nike krosovka', price: 920000, oldPrice: 1100000, image: 'https://img.freepik.com/free-photo/fashion-shoes-sneakers_1203-7529.jpg?semt=ais_hybrid&w=740&q=80', category: 'kiyim', rating: 3.9 },
 ];
 
+const TELEGRAM_USERNAME = 'Abdu11ayevv_aa';
+const TELEGRAM_URL = `https://t.me/${TELEGRAM_USERNAME}`;
+
 const LOCATIONS = ['Toshkent', 'Andijon', 'Farg\'ona', 'Namangan', 'Samarqand', 'Buxoro'];
 const HIDDEN_CATEGORIES = new Set(['oziq', 'sog']);
 const BRAND_KEYWORDS = ['apple', 'samsung', 'xiaomi', 'sony'];
@@ -24,6 +27,8 @@ let userRole = localStorage.getItem('user_role') || null;
 let activeChatProductId = null;
 let profileAvatarValue = '';
 let newProductImageValue = '';
+let checkoutMessage = '';
+let checkoutContext = 'cart';
 const bannerAds = [
   {
     brand: 'Pepsi',
@@ -793,13 +798,29 @@ function renderFavoritesList() {
 
   listEl.innerHTML = favoriteProducts.map((p) => `
     <div class="favorite-item">
-      <div>
+      <div class="favorite-info">
         <strong>${p.name}</strong>
         <div>${formatPrice(p.price)} so'm</div>
       </div>
-      <button class="btn fav-btn" onclick="toggleFavorite('${getProductId(p)}')">O'chirish</button>
+      <div class="favorite-actions">
+        <button class="btn fav-buy-btn" onclick="buyFavorite('${getProductId(p)}')">Sotib olish</button>
+        <button class="btn fav-btn" onclick="toggleFavorite('${getProductId(p)}')">O'chirish</button>
+      </div>
     </div>
   `).join('');
+}
+
+function buyFavorite(productId) {
+  const product = products.find((p) => getProductId(p) === String(productId));
+  if (!product) return;
+  const item = {
+    id: getProductId(product),
+    name: product.name,
+    price: Number(product.price) || 0,
+    quantity: 1,
+    image: product.image
+  };
+  openCheckoutModal('favorite', [item]);
 }
 
 function getChats() {
@@ -1291,6 +1312,9 @@ window.addEventListener('click', (e) => {
   if (e.target && e.target.id === 'profileModal') {
     closeProfileModal();
   }
+  if (e.target && e.target.id === 'checkoutModal') {
+    closeCheckoutModal();
+  }
 });
 
 window.syncFavoritesFromBackend = syncFavoritesFromBackend;
@@ -1310,21 +1334,75 @@ window.logout = function () {
 };
 
 // CHECKOUT
-document.querySelector(".checkout-btn").addEventListener("click", () => {
-  if (cart.length === 0) {
-    alert("Savat bo'sh!");
+function buildCheckoutMessage(items, total) {
+  const lines = items.map((p) => `${p.name} x${p.quantity}`);
+  return `Sotib olish:\n\n${lines.join("\n")}\n\nJami: ${formatPrice(total)} so'm`;
+}
+
+function openCheckoutModal(source = 'cart', items = cart) {
+  checkoutContext = source;
+  const modal = document.getElementById('checkoutModal');
+  const summary = document.getElementById('checkoutSummary');
+  const totalEl = document.getElementById('checkoutTotal');
+  const telegramBtn = document.getElementById('checkoutTelegramBtn');
+
+  if (!modal || !summary || !totalEl || !telegramBtn) return;
+
+  if (!items || items.length === 0) {
+    summary.innerHTML = '<p class="empty-cart">Savat bo\'sh</p>';
+    totalEl.textContent = "0 so'm";
+    telegramBtn.disabled = true;
+    telegramBtn.classList.add('disabled');
+    checkoutMessage = '';
+  } else {
+    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    summary.innerHTML = items.map((item) => `
+      <div class="checkout-item">
+        <div class="checkout-item-title">${item.name}</div>
+        <div class="checkout-item-meta">x${item.quantity}</div>
+        <div class="checkout-item-price">${formatPrice(item.price * item.quantity)} so'm</div>
+      </div>
+    `).join('');
+    totalEl.textContent = `${formatPrice(total)} so'm`;
+    telegramBtn.disabled = false;
+    telegramBtn.classList.remove('disabled');
+    checkoutMessage = buildCheckoutMessage(items, total);
+  }
+
+  modal.classList.add('open');
+}
+
+function closeCheckoutModal() {
+  const modal = document.getElementById('checkoutModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function sendCheckoutToTelegram() {
+  if (!checkoutMessage) {
+    closeCheckoutModal();
     return;
   }
 
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const message = `Sotib olish:\n\n${cart.map(p => `${p.name} x${p.quantity}`).join("\n")}\n\nJami: ${formatPrice(total)} so'm`;
-  alert(message);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(checkoutMessage).catch(() => {});
+  }
 
-  cart = [];
-  saveCart();
-  updateCartUI();
-  toggleCart();
-});
+  window.open(TELEGRAM_URL, '_blank');
+
+  if (checkoutContext === 'cart') {
+    cart = [];
+    saveCart();
+    updateCartUI();
+    toggleCart();
+  }
+
+  closeCheckoutModal();
+}
+
+const checkoutBtn = document.querySelector(".checkout-btn");
+if (checkoutBtn) {
+  checkoutBtn.addEventListener("click", () => openCheckoutModal('cart', cart));
+}
 
 // INITIALIZATION
 initApp();

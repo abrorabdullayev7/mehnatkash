@@ -372,6 +372,28 @@
     <!-- OVERLAY -->
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
+    <!-- CHECKOUT MODAL -->
+    <div id="checkoutModal" class="app-modal">
+        <div class="app-modal-content">
+            <div class="app-modal-header">
+                <h3>Buyurtmani tasdiqlash</h3>
+                <button onclick="closeCheckoutModal()" class="close-btn">&times;</button>
+            </div>
+            <div class="app-modal-body">
+                <p class="checkout-note">Telegram orqali buyurtma berish uchun quyidagi ma'lumotlar tayyor.</p>
+                <div id="checkoutSummary" class="checkout-summary"></div>
+                <div class="checkout-total-row">
+                    <span>Jami:</span>
+                    <strong id="checkoutTotal">0 so'm</strong>
+                </div>
+                <div class="checkout-actions">
+                    <button class="btn btn-light" onclick="closeCheckoutModal()">Bekor</button>
+                    <button class="btn checkout-telegram-btn" id="checkoutTelegramBtn" onclick="sendCheckoutToTelegram()">Telegramga o'tish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="./api.js"></script>
     <script>
@@ -379,8 +401,13 @@
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
 
+        const TELEGRAM_USERNAME = 'Abdu11ayevv_aa';
+        const TELEGRAM_URL = `https://t.me/${TELEGRAM_USERNAME}`;
+
         let product = null;
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let checkoutMessage = '';
+        let useBackend = false;
 
         const defaultProducts = [
             { id: 1, name: 'iPhone 17 promax', price: 15000000, oldPrice: 17000000, image: 'https://avatars.mds.yandex.net/i?id=39df4dd98890388b24c72c22009e02ac23eb2963-5092546-images-thumbs&n=13', category: 'telefon', rating: 4.5 },
@@ -399,6 +426,41 @@
                 return raw ? JSON.parse(raw) : [];
             } catch (e) {
                 return [];
+            }
+        }
+
+        function normalizeBackendCart(cartResponse) {
+            const items = (cartResponse && cartResponse.items) ? cartResponse.items : [];
+            return items.map((item) => {
+                const product = (item.product && typeof item.product === 'object') ? item.product : null;
+                return {
+                    id: product ? (product._id || product.id) : item.product,
+                    name: product ? product.name : item.name,
+                    price: product ? product.price : item.price,
+                    image: product ? product.image : '',
+                    quantity: item.quantity
+                };
+            });
+        }
+
+        async function initBackendCart() {
+            try {
+                const response = await fetch('http://localhost:5000/api/health');
+                if (response.ok) {
+                    useBackend = true;
+                    try {
+                        const result = await api.getCart();
+                        const normalized = normalizeBackendCart(result.cart || result);
+                        if (normalized.length > 0) {
+                            cart = normalized;
+                            localStorage.setItem('cart', JSON.stringify(cart));
+                        }
+                    } catch (e) {
+                        console.log('Cart sync failed, using local data');
+                    }
+                }
+            } catch (e) {
+                useBackend = false;
             }
         }
 
@@ -464,28 +526,42 @@
             document.getElementById('addBtn').addEventListener('click', addToCartFromDetail);
         }
 
-        function addToCartFromDetail() {
+        async function addToCartFromDetail() {
             const quantity = parseInt(document.getElementById('quantity').value);
             for (let i = 0; i < quantity; i++) {
-                addToCartDetail();
+                await addToCartDetail();
             }
-            alert('Savatga qo\'shildi!');
         }
 
-        function addToCartDetail() {
+        async function addToCartDetail() {
             const id = product._id || product.id;
             const existing = cart.find(item => String(item.id) === String(id));
+            let backendSynced = false;
 
-            if (existing) {
-                existing.quantity++;
-            } else {
-                cart.push({
-                    id: id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.image,
-                    quantity: 1
-                });
+            if (useBackend) {
+                try {
+                    const result = await api.addToCart(id, 1);
+                    if (result && result.cart) {
+                        cart = normalizeBackendCart(result.cart);
+                        backendSynced = true;
+                    }
+                } catch (error) {
+                    console.log('Backend failed, fallback to local cart');
+                }
+            }
+
+            if (!backendSynced) {
+                if (existing) {
+                    existing.quantity++;
+                } else {
+                    cart.push({
+                        id: id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                        quantity: 1
+                    });
+                }
             }
 
             localStorage.setItem('cart', JSON.stringify(cart));
@@ -496,16 +572,47 @@
             return price.toLocaleString('uz-UZ');
         }
 
-        function removeFromCart(productId) {
-            cart = cart.filter(item => String(item.id) !== String(productId));
+        async function removeFromCart(productId) {
+            let backendSynced = false;
+            if (useBackend) {
+                try {
+                    const result = await api.removeFromCart(productId);
+                    if (result && result.cart) {
+                        cart = normalizeBackendCart(result.cart);
+                        backendSynced = true;
+                    }
+                } catch (error) {
+                    console.log('Backend remove failed, fallback to local cart');
+                }
+            }
+
+            if (!backendSynced) {
+                cart = cart.filter(item => String(item.id) !== String(productId));
+            }
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartUI();
         }
 
-        function updateQuantity(productId, quantity) {
+        async function updateQuantity(productId, quantity) {
             const item = cart.find(item => String(item.id) === String(productId));
             if (item) {
-                item.quantity = Math.max(1, quantity);
+                const finalQty = Math.max(1, quantity);
+                let backendSynced = false;
+                if (useBackend) {
+                    try {
+                        const result = await api.updateCart(productId, finalQty);
+                        if (result && result.cart) {
+                            cart = normalizeBackendCart(result.cart);
+                            backendSynced = true;
+                        }
+                    } catch (error) {
+                        console.log('Backend update failed, fallback to local cart');
+                    }
+                }
+
+                if (!backendSynced) {
+                    item.quantity = finalQty;
+                }
                 localStorage.setItem('cart', JSON.stringify(cart));
                 updateCartUI();
             }
@@ -547,6 +654,67 @@
         function toggleCart() {
             document.getElementById('cartSidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function buildCheckoutMessage(items, total) {
+            const lines = items.map((p) => `${p.name} x${p.quantity}`);
+            return `Sotib olish:\n\n${lines.join("\n")}\n\nJami: ${formatPrice(total)} so'm`;
+        }
+
+        function openCheckoutModal(items = cart) {
+            const modal = document.getElementById('checkoutModal');
+            const summary = document.getElementById('checkoutSummary');
+            const totalEl = document.getElementById('checkoutTotal');
+            const telegramBtn = document.getElementById('checkoutTelegramBtn');
+
+            if (!modal || !summary || !totalEl || !telegramBtn) return;
+
+            if (!items || items.length === 0) {
+                summary.innerHTML = '<p class="empty-cart">Savat bo\'sh</p>';
+                totalEl.textContent = "0 so'm";
+                telegramBtn.disabled = true;
+                telegramBtn.classList.add('disabled');
+                checkoutMessage = '';
+            } else {
+                const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                summary.innerHTML = items.map((item) => `
+                  <div class="checkout-item">
+                    <div class="checkout-item-title">${item.name}</div>
+                    <div class="checkout-item-meta">x${item.quantity}</div>
+                    <div class="checkout-item-price">${formatPrice(item.price * item.quantity)} so'm</div>
+                  </div>
+                `).join('');
+                totalEl.textContent = `${formatPrice(total)} so'm`;
+                telegramBtn.disabled = false;
+                telegramBtn.classList.remove('disabled');
+                checkoutMessage = buildCheckoutMessage(items, total);
+            }
+
+            modal.classList.add('open');
+        }
+
+        function closeCheckoutModal() {
+            const modal = document.getElementById('checkoutModal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        function sendCheckoutToTelegram() {
+            if (!checkoutMessage) {
+                closeCheckoutModal();
+                return;
+            }
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(checkoutMessage).catch(() => {});
+            }
+
+            window.open(TELEGRAM_URL, '_blank');
+
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartUI();
+            toggleCart();
+            closeCheckoutModal();
         }
 
         // Auth related UI cleanup
@@ -654,8 +822,19 @@
 
         initGoogleButton();
 
+        const checkoutBtn = document.querySelector('.checkout-btn');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', () => openCheckoutModal(cart));
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'checkoutModal') {
+                closeCheckoutModal();
+            }
+        });
+
         loadProduct();
-        updateCartUI();
+        initBackendCart().finally(() => updateCartUI());
     </script>
 </body>
 

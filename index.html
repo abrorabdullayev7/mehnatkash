@@ -292,6 +292,28 @@
         </div>
     </div>
 
+    <!-- CHECKOUT MODAL -->
+    <div id="checkoutModal" class="app-modal">
+        <div class="app-modal-content">
+            <div class="app-modal-header">
+                <h3>Buyurtmani tasdiqlash</h3>
+                <button onclick="closeCheckoutModal()" class="close-btn">&times;</button>
+            </div>
+            <div class="app-modal-body">
+                <p class="checkout-note">Telegram orqali buyurtma berish uchun quyidagi ma'lumotlar tayyor.</p>
+                <div id="checkoutSummary" class="checkout-summary"></div>
+                <div class="checkout-total-row">
+                    <span>Jami:</span>
+                    <strong id="checkoutTotal">0 so'm</strong>
+                </div>
+                <div class="checkout-actions">
+                    <button class="btn btn-light" onclick="closeCheckoutModal()">Bekor</button>
+                    <button class="btn checkout-telegram-btn" id="checkoutTelegramBtn" onclick="sendCheckoutToTelegram()">Telegramga o'tish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- CHAT MODAL -->
     <div id="chatModal" class="app-modal">
         <div class="app-modal-content">
