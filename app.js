@@ -19,7 +19,8 @@ const BRAND_KEYWORDS = ['apple', 'samsung', 'xiaomi', 'sony'];
 const COLOR_PALETTE = ['black', 'white', 'red', 'blue', 'yellow'];
 let productLocations = loadState('product_locations', {});
 let favorites = loadState('favorites', []);
-let products = attachProductMeta(defaultProducts);
+const cachedProducts = loadState('products_cache', null);
+let products = attachProductMeta(Array.isArray(cachedProducts) && cachedProducts.length ? cachedProducts : defaultProducts);
 saveState('products_cache', products);
 let cart = loadCart();
 let useBackend = false;
@@ -141,17 +142,29 @@ async function initApp() {
   const landing = document.getElementById('landingOverlay');
   if (landing) landing.style.display = 'none';
 
-  const user = getStoredUser();
+  let user = getStoredUser();
+  if (!user && useBackend && api.getToken()) {
+    try {
+      const profile = await api.getProfile();
+      if (profile && profile.user) {
+        user = profile.user;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+    } catch (e) {
+      console.warn('Profile hydrate failed:', e.message || e);
+    }
+  }
+
   if (user) {
     applyHeaderUser(user);
     await syncFavoritesFromBackend();
   }
 
   if (!userRole) {
-    // Optionally set a default guest role or just leave it null
-    userRole = 'user';
-    applyRoleUI();
+    userRole = (user && user.role) ? user.role : 'user';
+    localStorage.setItem('user_role', userRole);
   }
+  applyRoleUI();
 }
 
 function setActiveCategory(category) {
@@ -205,12 +218,16 @@ async function handleLandingSignIn(email, password) {
   if (!finalEmail || !finalPassword) return alert('Email va parol kiriting');
 
   if (!useBackend) {
-    // Local fallback: any user info works as "guest" or just store what they entered
-    const user = { name: finalEmail.split('@')[0], email: finalEmail, role: 'user' };
+    // Local fallback: use saved local users when possible
+    const localUsers = loadState('local_users', []);
+    const existing = localUsers.find((u) => String(u.email || '').toLowerCase() === finalEmail);
+    const role = existing && existing.role ? existing.role : 'user';
+    const name = existing && existing.name ? existing.name : finalEmail.split('@')[0];
+    const user = { name, email: finalEmail, role };
     localStorage.setItem('user', JSON.stringify(user));
     applyHeaderUser(user);
     document.getElementById('landingOverlay').style.display = 'none';
-    userRole = 'user';
+    userRole = role;
     localStorage.setItem('user_role', userRole);
     applyRoleUI();
     return;
@@ -227,7 +244,22 @@ async function handleLandingSignIn(email, password) {
       if (userRole) localStorage.setItem('user_role', userRole);
       if (!userRole) showRoleSelector(); else applyRoleUI();
     }
-  } catch (e) { alert('Kirish muvaffaqiyatsiz: ' + (e.message || e)); }
+  } catch (e) {
+    // If backend login fails, try local user fallback
+    const localUsers = loadState('local_users', []);
+    const existing = localUsers.find((u) => String(u.email || '').toLowerCase() === finalEmail);
+    if (existing) {
+      const fallbackUser = { name: existing.name || finalEmail.split('@')[0], email: finalEmail, role: existing.role || 'user' };
+      localStorage.setItem('user', JSON.stringify(fallbackUser));
+      applyHeaderUser(fallbackUser);
+      document.getElementById('landingOverlay').style.display = 'none';
+      userRole = fallbackUser.role;
+      localStorage.setItem('user_role', userRole);
+      applyRoleUI();
+      return;
+    }
+    alert('Kirish muvaffaqiyatsiz: ' + (e.message || e));
+  }
 }
 
 async function handleLandingSignup(data) {
@@ -378,7 +410,7 @@ function closeAddProductModal() {
 }
 
 async function openMyListings() {
-  if (!useBackend) {
+  if (!useBackend || !api.getToken()) {
     const localPreview = products
       .slice(0, 10)
       .map((p, i) => `${i + 1}. ${p.name} - ${formatPrice(p.price)} so'm`)
@@ -949,7 +981,7 @@ async function submitNewProduct() {
 
   const payload = { name, price, oldPrice: Math.round(price * 1.12), category, image, description, stock, color };
 
-  if (useBackend) {
+  if (useBackend && api.getToken()) {
     try {
       const res = await api.createProduct(payload);
       if (res && res.product) {
@@ -968,6 +1000,9 @@ async function submitNewProduct() {
     saveState('products_cache', products);
     applyFilters();
     closeAddProductModal();
+    if (useBackend && !api.getToken()) {
+      alert('Backend login yo\'q. Mahsulot lokal saqlandi.');
+    }
   }
 }
 
@@ -1329,7 +1364,8 @@ window.showUser = applyHeaderUser;
 window.logout = function () {
   if (useBackend) api.logout();
   localStorage.removeItem('user');
-  localStorage.removeItem('token');
+  localStorage.removeItem('user_role');
+  localStorage.removeItem('auth_token');
   location.reload();
 };
 

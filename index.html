@@ -500,6 +500,9 @@
                         if (result && result.token) {
                             api.setToken(result.token);
                             localStorage.setItem('user', JSON.stringify(result.user));
+                            if (result.user && result.user.role) {
+                                localStorage.setItem('user_role', result.user.role);
+                            }
                             if (window.showUser) window.showUser(result.user);
                             if (window.syncFavoritesFromBackend) await window.syncFavoritesFromBackend();
                             hideLoginModal();

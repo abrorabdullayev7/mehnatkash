@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mahsulot - BANAN</title>
+    <title>Banan Market - By Abrorbek Abdullayev</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -747,14 +747,22 @@
                     if (result && result.token) {
                         api.setToken(result.token);
                         localStorage.setItem('user', JSON.stringify(result.user));
+                        if (result.user && result.user.role) {
+                            localStorage.setItem('user_role', result.user.role);
+                        }
                         showUser(result.user);
                         hideLoginModal();
                     }
                 } catch (e) { alert('Kirish muvaffaqiyatsiz: ' + e.message); }
             } else {
                 // Local fallback
-                const user = { name: email.split('@')[0], email };
+                const localUsers = JSON.parse(localStorage.getItem('local_users') || '[]');
+                const existing = localUsers.find((u) => String(u.email || '').toLowerCase() === String(email || '').toLowerCase());
+                const role = existing && existing.role ? existing.role : 'user';
+                const name = existing && existing.name ? existing.name : email.split('@')[0];
+                const user = { name, email, role };
                 localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('user_role', role);
                 showUser(user);
                 hideLoginModal();
             }
@@ -782,7 +790,12 @@
         }
 
         const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-        if (storedUser) showUser(storedUser);
+        if (storedUser) {
+            if (storedUser.role && !localStorage.getItem('user_role')) {
+                localStorage.setItem('user_role', storedUser.role);
+            }
+            showUser(storedUser);
+        }
 
         async function initGoogleButton() {
             try {
@@ -797,6 +810,9 @@
                         if (result && result.token) {
                             api.setToken(result.token);
                             localStorage.setItem('user', JSON.stringify(result.user));
+                            if (result.user && result.user.role) {
+                                localStorage.setItem('user_role', result.user.role);
+                            }
                             showUser(result.user);
                             hideLoginModal();
                         }
